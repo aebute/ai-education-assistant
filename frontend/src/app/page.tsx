@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 interface QuizItem {
-  question: str;
+  question: string;
   options: string[];
   correct_answer: string;
 }
@@ -175,10 +175,3 @@ export default function Home() {
               ) : (
                 <p className="text-xs text-slate-500">No quiz available. Process material to generate questions.</p>
               )}
-            </div>
-          )}
-        </div>
-      </div>
-    </main>
-  );
-}
