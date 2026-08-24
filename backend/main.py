@@ -1,11 +1,10 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-from typing import List
+import pypdf
+import io
 
-app = FastAPI(title="AI Education Assistant API")
+app = FastAPI()
 
-# Enable CORS for Next.js frontend
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -14,66 +13,52 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-class ProcessRequest(BaseModel):
-    text: str
-    level: str = "Elementary / Beginner"
+@app.post("/process")
+async def process_material(
+    level: str = Form("Elementary / Beginner"),
+    text: str = Form(None),
+    file: UploadFile = File(None)
+):
+    extracted_text = ""
 
-class QuizQuestion(BaseModel):
-    question: str
-    options: List[str]
-    correct_answer: str
+    if file:
+        contents = await file.read()
+        if file.filename.lower().endswith(".pdf"):
+            try:
+                pdf_reader = pypdf.PdfReader(io.BytesIO(contents))
+                for page in pdf_reader.pages:
+                    extracted_text += (page.extract_text() or "") + "\n"
+            except Exception as e:
+                return {"error": f"Failed to parse PDF file: {str(e)}"}
+        else:
+            extracted_text = contents.decode("utf-8", errors="ignore")
+    elif text:
+        extracted_text = text
 
-class ProcessResponse(BaseModel):
-    summary: str
-    quiz: List[QuizQuestion]
-    review_topics: List[str]
+    if not extracted_text.strip():
+        return {"error": "No readable text content found."}
 
-@app.get("/")
-def read_root():
-    return {"status": "online", "message": "AI Education Assistant API running"}
+    # Clean extracted text lines
+    clean_text = " ".join(extracted_text.split())
 
-@app.post("/process", response_model=ProcessResponse)
-def process_material(payload: ProcessRequest):
-    text = payload.text.strip()
+    # Replace with your actual LLM processing call
+    summary = f"[{level.upper()} SUMMARY]\n\n" + clean_text[:600] + "..."
     
-    # Extract topics or default if text is short
-    topics = [line.strip() for line in text.split(".") if len(line.strip()) > 10]
-    topic_1 = topics[0][:30] if len(topics) > 0 else "Core Concept Overview"
-    topic_2 = topics[1][:30] if len(topics) > 1 else "Key Application"
-
-    summary_text = (
-        f"[{payload.level.upper()} SUMMARY]\n"
-        f"Key takeaway from your material: {text[:200]}..." if len(text) > 200 else f"[{payload.level.upper()} SUMMARY]\n{text}"
-    )
-
-    generated_quiz = [
-        QuizQuestion(
-            question=f"Based on your notes, what is the main focus regarding: '{topic_1}'?",
-            options=[
-                f"Primary definition of {topic_1}",
-                "Unrelated secondary process",
-                "Historical background only"
-            ],
-            correct_answer=f"Primary definition of {topic_1}"
-        ),
-        QuizQuestion(
-            question=f"Which statement best describes '{topic_2}'?",
-            options=[
-                "It has no practical application",
-                f"It directly relates to {topic_2}",
-                "It only applies to advanced theoretical models"
-            ],
-            correct_answer=f"It directly relates to {topic_2}"
-        )
+    quiz = [
+        {
+            "question": "What is the primary theme of the uploaded material?",
+            "options": ["A core subject theme", "Unrelated secondary detail", "Option C"],
+            "correct_answer": "A core subject theme"
+        }
+    ]
+    
+    review_topics = [
+        f"Review: Key themes in {file.filename if file else 'Provided Material'}",
+        "Review: Key Application"
     ]
 
-    gap_topics = [
-        f"Review: {topic_1}",
-        f"Review: {topic_2}"
-    ]
-
-    return ProcessResponse(
-        summary=summary_text,
-        quiz=generated_quiz,
-        review_topics=gap_topics
-    )
+    return {
+        "summary": summary,
+        "quiz": quiz,
+        "review_topics": review_topics
+    }

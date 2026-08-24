@@ -16,7 +16,6 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState<"reader" | "quiz">("reader");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Dynamic outputs from backend
   const [summary, setSummary] = useState("");
   const [quizData, setQuizData] = useState<QuizItem[]>([]);
   const [reviewTopics, setReviewTopics] = useState<string[]>([]);
@@ -40,20 +39,18 @@ export default function Home() {
     setLoading(true);
 
     try {
-      let textContent = inputMaterial;
+      const formData = new FormData();
+      formData.append("level", targetLevel);
 
-      // Handle raw text reading for uploaded TXT files locally before sending
-      if (file && file.type === "text/plain") {
-        textContent = await file.text();
+      if (file) {
+        formData.append("file", file);
+      } else {
+        formData.append("text", inputMaterial);
       }
 
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/process`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          text: textContent || `Uploaded file: ${file?.name}`,
-          level: targetLevel,
-        }),
+        body: formData,
       });
 
       if (res.ok) {
@@ -93,12 +90,10 @@ export default function Home() {
       </header>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Left Column: File Dropzone, Text Input & Learning Gaps */}
         <div className="space-y-6">
           <div className="bg-slate-900/60 p-5 rounded-xl border border-slate-800 space-y-4">
             <h2 className="text-lg font-semibold text-slate-200">1. Material Input</h2>
 
-            {/* File Drag and Drop Zone */}
             <div
               onDragOver={(e) => e.preventDefault()}
               onDrop={handleDrop}
@@ -123,7 +118,6 @@ export default function Home() {
 
             <div className="text-center text-xs text-slate-500 font-medium">— OR —</div>
 
-            {/* Textarea Input */}
             <textarea
               rows={4}
               value={inputMaterial}
@@ -141,7 +135,6 @@ export default function Home() {
             </button>
           </div>
 
-          {/* Learning Gap Tracker */}
           <div className="bg-slate-900/60 p-5 rounded-xl border border-slate-800">
             <div className="flex justify-between items-center mb-3">
               <h2 className="text-lg font-semibold text-slate-200">Learning Gap Tracker</h2>
@@ -172,7 +165,6 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Right Column: Output Tabs */}
         <div className="bg-slate-900/60 p-5 rounded-xl border border-slate-800">
           <div className="flex border-b border-slate-800 mb-4">
             <button
@@ -204,7 +196,7 @@ export default function Home() {
                 </div>
               ) : (
                 <p className="text-xs text-slate-500">
-                  Upload a PDF document or paste study notes, then click Process Material. Extracted concepts and summary guides will appear here automatically.
+                  Upload a PDF document or paste study notes, then click Process Material.
                 </p>
               )}
             </div>
@@ -240,7 +232,7 @@ export default function Home() {
                   </div>
                 ))
               ) : (
-                <p className="text-xs text-slate-500">No quiz questions generated yet. Process material to generate dynamic flashcards.</p>
+                <p className="text-xs text-slate-500">No quiz questions generated yet.</p>
               )}
             </div>
           )}
