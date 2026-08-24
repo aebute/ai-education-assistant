@@ -1,0 +1,21 @@
+
+# Virtual environment
+venv/
+env/
+
+# Environment variables (API Keys)
+.env
+.env.local
+
+# Python cache files
+__pycache__/
+*.pyc
+
+# Node modules & Next.js builds
+node_modules/
+.next/
+out/
+
+# IDE / OS files
+.vscode/
+.DS_Store
