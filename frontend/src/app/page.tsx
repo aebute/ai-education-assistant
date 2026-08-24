@@ -14,7 +14,6 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<"reader" | "quiz">("reader");
 
-  // Dynamic state replacing placeholders
   const [summary, setSummary] = useState("");
   const [quizData, setQuizData] = useState<QuizItem[]>([]);
   const [reviewTopics, setReviewTopics] = useState<string[]>([]);
@@ -68,7 +67,6 @@ export default function Home() {
       </header>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Left Column: Input & Learning Gaps */}
         <div className="space-y-6">
           <div className="bg-slate-900 p-5 rounded-xl border border-slate-800">
             <h2 className="text-lg font-semibold mb-3 text-slate-200">1. Material Input</h2>
@@ -107,7 +105,6 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Right Column: Dynamic Outputs */}
         <div className="bg-slate-900 p-5 rounded-xl border border-slate-800">
           <div className="flex border-b border-slate-800 mb-4">
             <button
@@ -175,3 +172,10 @@ export default function Home() {
               ) : (
                 <p className="text-xs text-slate-500">No quiz available. Process material to generate questions.</p>
               )}
+            </div>
+          )}
+        </div>
+      </div>
+    </main>
+  );
+}
