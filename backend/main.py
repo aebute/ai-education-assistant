@@ -13,7 +13,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.post("/process")
+@app.post("/api/v1/process-material")
 async def process_material(
     level: str = Form("Elementary / Beginner"),
     text: str = Form(None),
