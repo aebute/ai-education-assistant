@@ -48,7 +48,7 @@ export default function Home() {
         formData.append("text", inputMaterial);
       }
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/process`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1//process-material`, {
         method: "POST",
         body: formData,
       });
