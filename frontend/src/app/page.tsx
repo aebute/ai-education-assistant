@@ -32,7 +32,7 @@ export default function Home() {
         return;
       }
 
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || "https://ai-education-backend-9pwn.onrender.com";
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || "https://ai-education-backend-9wvn.onrender.com";
       const res = await fetch(`${baseUrl}/api/process-document`, {
         method: "POST",
         body: formData,
