@@ -82,7 +82,7 @@ def process_text_with_groq(text: str, age_group: str) -> dict:
     """
 
     response = client.chat.completions.create(
-        model="llama-3.1-8b-instant",
+        model="openai/gpt-oss-20b",
         messages=[
             {"role": "system", "content": "You output strictly JSON content."},
             {"role": "user", "content": prompt}
