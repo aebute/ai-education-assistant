@@ -21,7 +21,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
+# Initialize Groq client with environment variable guard
+api_key = os.environ.get("GROQ_API_KEY")
+client = Groq(api_key=api_key) if api_key else None
 
 class QuizQuestion(BaseModel):
     question: str
@@ -48,6 +50,12 @@ def extract_text_from_file(file: UploadFile) -> str:
         return content.decode("utf-8", errors="ignore")
 
 def process_text_with_groq(text: str, age_group: str) -> dict:
+    if not client:
+        raise HTTPException(
+            status_code=500, 
+            detail="GROQ_API_KEY is not configured on the server environment."
+        )
+
     prompt = f"""
     You are an expert AI educator. Analyze the following learning material provided for a target audience level of: '{age_group}'.
 
@@ -74,7 +82,7 @@ def process_text_with_groq(text: str, age_group: str) -> dict:
     """
 
     response = client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
+        model="llama-3.1-70b-versatile",
         messages=[
             {"role": "system", "content": "You output strictly JSON content."},
             {"role": "user", "content": prompt}
